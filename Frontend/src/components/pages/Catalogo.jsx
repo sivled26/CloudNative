@@ -1,43 +1,41 @@
-import React, { useEffect, useState } from 'react'
-import Filtros from '../organisms/Filtros'
-import Buscador from '../molecules/Buscador'
-import Producto from '../organisms/Producto'
-import axios from 'axios'
+import React, { useEffect, useState } from 'react';
+import Filtros from '../organisms/Filtros';
+import Buscador from '../molecules/Buscador';
+import Producto from '../organisms/Producto';
+import { productosApi } from '../../api/productosApi';
+import { formatearPrecio } from '../../utils/formato';
 
 export default function Catalogo() {
-  const [productos, setProductos] = useState([])
+  const [productos, setProductos] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-   //const token = localStorage.getItem("token");
-    axios.get("http://localhost:8181/api/productos")/*, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    })*/
-      .then(res => setProductos(res.data))
-      .catch(err => console.error("Error al obtener productos:", err))
-  }, [])
-  /*const idsPermitidos = [5,6,7,8,9,10] 
-  const productosFiltrados = productos.filter(p => idsPermitidos.includes(p.id))*/
+    productosApi
+      .listar()
+      .then(setProductos)
+      .catch((err) => setError(err.userMessage || 'Error al obtener productos'));
+  }, []);
+
   return (
     <>
-      <Buscador/>
+      <Buscador />
       <div id="seccion2">
-        <Filtros/>
+        <Filtros />
         <div id="productos">
-          {productos.map(p => (
+          {error && <p className="input-error">{error}</p>}
+          {productos.map((p) => (
             <Producto
-            code={p.id}
-            image={p.imagenUrl}       
-            name={p.nombre}        
-            description={p.descripcion}
-            category={p.categoria}
-            price={p.precio.toLocaleString("es-CL")}
-          />
+              key={p.id}
+              code={p.id}
+              image={p.imagenUrl}
+              name={p.nombre}
+              description={p.descripcion}
+              category={p.categoria}
+              price={formatearPrecio(p.precio)}
+            />
           ))}
         </div>
       </div>
     </>
-    
-  )
+  );
 }

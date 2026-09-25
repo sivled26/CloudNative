@@ -1,7 +1,7 @@
 import React from 'react'
 
 export default function Articulo(props) {
-  const {code, titulo, descripcion, fecha} = props
+  const { titulo, descripcion, fecha } = props
   return (
     <div>
             <article className="product-card2">

@@ -4,11 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-   plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: './jest.setup.js'
-  }
+  server: {
+    port: 5173, // debe coincidir con el Redirect URI registrado en Azure AD
+  },
 })
-

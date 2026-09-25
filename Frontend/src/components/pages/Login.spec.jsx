@@ -1,62 +1,48 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter, useNavigate } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import SectionLogin from '../organisms/SectionLogin';
-const mockNavigate = jest.fn();
+import { useAuth } from '../../auth/useAuth';
+import { crearAuth } from '../../../test/authMock';
 
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom');
-  return {
-    ...originalModule,
-    useNavigate: () => mockNavigate,
-  };
-});
+jest.mock('../../auth/useAuth');
 
-describe('Login Component', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+const renderLogin = () =>
+  render(
+    <MemoryRouter initialEntries={['/login']}>
+      <Routes>
+        <Route path="/login" element={<SectionLogin />} />
+        <Route path="/" element={<p>Página inicio</p>} />
+        <Route path="/admin" element={<p>Página admin</p>} />
+      </Routes>
+    </MemoryRouter>,
+  );
 
-  const renderLogin = () =>
-    render(
-      <BrowserRouter>
-        <SectionLogin />
-      </BrowserRouter>
-    );
-
-  test('Renderiza el formulario de inicio de sesión', () => {
+describe('Login con Azure AD', () => {
+  test('muestra el botón para ingresar con Microsoft', () => {
+    useAuth.mockReturnValue(crearAuth());
     renderLogin();
     expect(screen.getByRole('heading', { name: /iniciar sesión/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/correo electrónico/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ingresar con microsoft/i })).toBeInTheDocument();
   });
 
-  test('Muestra error si el correo está vacío', () => {
+  test('al hacer clic inicia el flujo de login de MSAL', () => {
+    const auth = crearAuth();
+    useAuth.mockReturnValue(auth);
     renderLogin();
-    fireEvent.click(screen.getByRole('button', { name: /iniciar sesión/i }));
-    expect(screen.getByText('Ingresa un correo.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /ingresar con microsoft/i }));
+    expect(auth.login).toHaveBeenCalledTimes(1);
   });
 
- 
-
-  test('Muestra error si la contraseña está vacía', () => {
+  test('si ya hay sesión de cliente redirige al inicio', () => {
+    useAuth.mockReturnValue(crearAuth({ isAuthenticated: true, roles: ['CLIENTE'] }));
     renderLogin();
-    fireEvent.change(screen.getByLabelText(/correo electrónico/i), {
-      target: { value: 'valid@email.com' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /iniciar sesión/i }));
-    expect(screen.getByText('Ingresa la contraseña.')).toBeInTheDocument();
+    expect(screen.getByText('Página inicio')).toBeInTheDocument();
   });
 
-  test('Navega a home si el login es exitoso', () => {
+  test('si ya hay sesión de admin redirige al panel', () => {
+    useAuth.mockReturnValue(crearAuth({ isAuthenticated: true, roles: ['ADMIN'] }));
     renderLogin();
-    fireEvent.change(screen.getByLabelText(/correo electrónico/i), {
-      target: { value: 'test@test.com' },
-    });
-    fireEvent.change(screen.getByLabelText(/contraseña/i), {
-      target: { value: '123456' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /iniciar sesión/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/');
+    expect(screen.getByText('Página admin')).toBeInTheDocument();
   });
 });

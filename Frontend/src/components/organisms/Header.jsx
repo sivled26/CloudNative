@@ -1,50 +1,41 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../auth/useAuth';
 
 export default function Header() {
-    const navigate = useNavigate();
-    const token = localStorage.getItem("token");
-    const rol = localStorage.getItem("rol"); // 👈 obtenemos el rol
+  const { isAuthenticated, isAdmin, name, login, logout } = useAuth();
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("rol");
-        navigate("/login");
-    };
+  return (
+    <header>
+      <div id="logo">
+        <Link to="/">
+          <img src="/images/Level-Up.png" alt="Level-Up" />
+        </Link>
+      </div>
 
-    return (
-        <header>
-            <div id="logo">
-                <Link to="/">
-                    <img src="images/Level-Up.png" alt="Level-Up" />
-                </Link>
-            </div>
+      <nav id="catalogonav">
+        <Link to="/">Inicio</Link>
+        <Link to="/catalogo">Catalogo</Link>
+        <Link to="/aboutus">Nosotros</Link>
+        <Link to="/blog">Blog</Link>
+      </nav>
 
-            <nav id="catalogonav">
-                <Link to="/">Inicio</Link>
-                <Link to="/catalogo">Catalogo</Link>
-                <Link to="/aboutus">Nosotros</Link>
-                <Link to="/blog">Blog</Link>
-            </nav>
+      <div id="extra">
+        <Link to="/carrito">Carro 🛒</Link>
 
-            <div id="extra">
-                <Link to="/carrito">Carro 🛒</Link>
+        {isAuthenticated && isAdmin && <Link to="/admin">Admin</Link>}
+        {isAuthenticated && <Link to="/perfil">{name || 'Mi perfil'}</Link>}
 
-                {/* 👇 cambia la ruta según el rol */}
-                {rol === "ADMIN" ? (
-                    <Link to="/admin">Admin</Link>
-                ) : (
-                    <Link to="/perfil">Usuario</Link>
-                )}
-
-                {token ? (
-                    <button onClick={handleLogout} className="logout-btn">
-                        Cerrar Sesión
-                    </button>
-                ) : (
-                    <Link to="/login">Iniciar Sesión</Link>
-                )}
-            </div>
-        </header>
-    );
+        {isAuthenticated ? (
+          <button type="button" onClick={logout} className="logout-btn">
+            Cerrar Sesión
+          </button>
+        ) : (
+          <button type="button" onClick={login} className="logout-btn">
+            Iniciar Sesión
+          </button>
+        )}
+      </div>
+    </header>
+  );
 }

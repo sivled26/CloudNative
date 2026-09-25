@@ -1,33 +1,26 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import Home from './Home';
+import { productosApi } from '../../api/productosApi';
 
-describe('Home Component', () => {
-  const renderHome = () => {
-    return render(
-      <BrowserRouter>
-        <Home />
-      </BrowserRouter>
-    );
-  };
+jest.mock('../../api/productosApi', () => ({ productosApi: { listar: jest.fn() } }));
 
-  test('renders main product section', () => {
-    renderHome();
-    const mainElement = screen.getByRole('main');
-    expect(mainElement).toBeDefined();
+describe('Home', () => {
+  test('muestra los productos destacados obtenidos desde la API', async () => {
+    productosApi.listar.mockResolvedValue([
+      { id: 1, nombre: 'Mouse Logitech', descripcion: 'Mouse gamer', precio: 29990, imagenUrl: 'a.jpg' },
+      { id: 2, nombre: 'Silla Gamer', descripcion: 'Silla ergonómica', precio: 159990, imagenUrl: 'b.jpg' },
+    ]);
+    render(<MemoryRouter><Home /></MemoryRouter>);
+    expect(await screen.findByText('Mouse Logitech')).toBeInTheDocument();
+    expect(screen.getByText('Silla Gamer')).toBeInTheDocument();
+    expect(screen.getByRole('main')).toBeInTheDocument();
   });
 
-  test('shows product titles', () => {
-    renderHome();
-    expect(screen.getByText('Teclado Mecánico RGB')).toBeDefined();
-    expect(screen.getByText('Mouse Gamer Ergonómico')).toBeDefined();
-    expect(screen.getByText('Audífonos con Micrófono')).toBeDefined();
-  });
-
-  test('displays buy buttons', () => {
-    renderHome();
-    const buyButtons = screen.getAllByText('Comprar');
-    expect(buyButtons.length).toBeGreaterThan(0);
+  test('muestra el mensaje de error si la API falla', async () => {
+    productosApi.listar.mockRejectedValue({ userMessage: 'No se pudo conectar con el servidor.' });
+    render(<MemoryRouter><Home /></MemoryRouter>);
+    expect(await screen.findByText('No se pudo conectar con el servidor.')).toBeInTheDocument();
   });
 });

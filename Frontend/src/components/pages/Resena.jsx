@@ -10,7 +10,7 @@ export default function Resena() {
         <div className="resena-contenido">
 
             <div className="resena-imagen">
-                <img src="images/control-xbox.jpg" alt="control xbox" style={{width:"600px"}}/>
+                <img src="/images/control-xbox.jpg" alt="control xbox" style={{width:"600px"}}/>
             </div>
 
             <div className="resena-detalles">

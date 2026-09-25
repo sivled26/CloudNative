@@ -1,82 +1,35 @@
-import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../auth/useAuth';
 
 export default function SectionLogin() {
-    const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setError] = useState({});
+  const { isAuthenticated, isAdmin, ready, login } = useAuth();
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  if (ready && isAuthenticated) {
+    return <Navigate to={isAdmin ? '/admin' : '/'} replace />;
+  }
+
+  const handleLogin = async () => {
+    setError('');
     try {
-      const res = await axios.post("http://localhost:8181/api/auth/login", {
-        correo: email,
-        password: password,
-      });
-
-      
-      
-      const data = res.data; // tu backend devuelve un String
-      if (data.token) {
-        const decoded = jwtDecode(data.token);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("rol", decoded.rol);
-        alert("Login exitoso")
-        if (decoded.rol === 'ADMIN') {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
-      } else {
-        setError(data); // "Credenciales inválidas."
-      }
+      await login(); // redirige a la página de login de Microsoft (Azure AD)
     } catch (err) {
-      console.error("Error en login:", err);
-      setError("Error al conectar con el servidor");
+      console.error('Error en login:', err);
+      setError('No se pudo iniciar sesión con Microsoft. Intenta nuevamente.');
     }
   };
 
   return (
-      <section className="form-container">
-        <div className="form-card">
-          <h2>Iniciar Sesión</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="login-email">Correo electrónico</label>
-              <input
-                type="email"
-                id="login-email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ejemplo@email.com"
-                className={errors.email ? 'input-invalid' : ''}
-              />
-              {errors.email && <span className="input-error">{errors.email}</span>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="login-password">Contraseña</label>
-              <input
-                type="password"
-                id="login-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••"
-                className={errors.password ? 'input-invalid' : ''}
-              />
-              {errors.password && <span className="input-error">{errors.password}</span>}
-            </div>
-
-            <button type="submit" className="form-btn">Iniciar Sesión</button>
-          </form>
-
-          <p className="switch-form">
-            ¿No tienes cuenta? <Link to="/registro">Regístrate</Link>
-          </p>
-        </div>
-      </section>
+    <section className="form-container">
+      <div className="form-card">
+        <h2>Iniciar Sesión</h2>
+        <p>Ingresa con tu cuenta Microsoft (Azure AD). No guardamos tu contraseña.</p>
+        <button type="button" className="form-btn" onClick={handleLogin} disabled={!ready}>
+          Ingresar con Microsoft
+        </button>
+        {error && <span className="input-error">{error}</span>}
+      </div>
+    </section>
   );
 }
