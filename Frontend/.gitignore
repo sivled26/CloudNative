@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Variables de entorno (credenciales de Azure AD / URLs)
+.env
+.env.*
+!.env.example
+
+# Reportes de cobertura
+coverage
