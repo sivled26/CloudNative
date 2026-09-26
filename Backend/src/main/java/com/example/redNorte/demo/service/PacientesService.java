@@ -26,11 +26,8 @@ public class PacientesService {
 
         Pacientes paciente = Pacientes.builder()
                 .nombre(request.getNombre())
-                .apellido(request.getApellido())
                 .correo(request.getCorreo())
-                .run(request.getRun())
                 .contrasena(passwordEncoder.encode(request.getContrasena())) // 👈 usa el bean
-                .direccion(request.getDireccion())
                 .build();
         try {
             pacientesRepository.save(paciente);

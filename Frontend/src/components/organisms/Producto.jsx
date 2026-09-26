@@ -2,13 +2,13 @@ import React from 'react'
 
 function addToCart(product){
   const products = JSON.parse(localStorage.getItem('products')) || []
-  console.log(products)
+
   products.push(product)
   localStorage.setItem('products',JSON.stringify(products))
 }
 
 export default function Producto(props) {
-  const {code, image, name, price, description, category} = props
+  const { image, name, price, description, category } = props
   return (
     <div className="producto">
         <a href="/resena">

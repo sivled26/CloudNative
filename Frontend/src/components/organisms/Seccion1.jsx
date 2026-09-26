@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function () {
+export default function Seccion1() {
   return (
     <div>
      <section id="seccion1">

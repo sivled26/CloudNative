@@ -4,9 +4,9 @@ import Articulo from '../organisms/Articulo'
 export default function Blog() {
   return (
     <div>
-    <main class="main-content">
-        <h2 class="section-title">Blog Gamer</h2>
-        <section class="blog-posts">
+    <main className="main-content">
+        <h2 className="section-title">Blog Gamer</h2>
+        <section className="blog-posts">
             <Articulo
                 code="1"
                 titulo="¿Por qué elegir teclados mecánicos?"

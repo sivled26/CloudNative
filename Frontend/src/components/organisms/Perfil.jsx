@@ -1,30 +1,24 @@
 import React from 'react';
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from '../../auth/useAuth';
 
 export default function Perfil() {
-  const token = localStorage.getItem("token");
-  let decodedToken = null;
-
-  if (token) {
-    try {
-      decodedToken = jwtDecode(token);
-    } catch (error) {
-      console.error("Error decodificando token:", error);
-    }
-  }
+  const { name, email, roles, scopes, accessClaims } = useAuth();
+  const expira = accessClaims?.exp ? new Date(accessClaims.exp * 1000).toLocaleString('es-CL') : null;
 
   return (
     <div className="perfil-container">
-      <img
-        src="https://raw.githubusercontent.com/0dr4d3kdb/proyectofullstack1/refs/heads/terminadoDelvis/imagenes/gamer-icon.png"
-        alt="Avatar"
-        className="perfil-avatar"
-      />
-      <div className="perfil-nombre">Arturo</div>
-      <div className="perfil-email">
-        {decodedToken?.sub ?? "No hay datos que mostrar"}
+      <img src="/images/gamer-icon.png" alt="Avatar" className="perfil-avatar" />
+      <div className="perfil-nombre">{name || 'Usuario'}</div>
+      <div className="perfil-email">{email || 'Sin correo'}</div>
+
+      <div className="perfil-puntos">
+        Rol: {roles.length > 0 ? roles.join(', ') : 'Sin rol asignado'}
       </div>
-      <div className="perfil-puntos">Puntos: 1200</div>
+
+      <div className="perfil-email">
+        <p>Scopes del token: {scopes.length > 0 ? scopes.join(', ') : '-'}</p>
+        {expira && <p>Token válido hasta: {expira}</p>}
+      </div>
     </div>
   );
 }
