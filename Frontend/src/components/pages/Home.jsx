@@ -11,11 +11,7 @@ export default function Home() {
   useEffect(() => {
     productosApi
       .listar()
-      .then((data) => {
-      console.log('Respuesta de productos:', data);
-      setProductos(data);
-          })
-      //.then(setProductos)
+      .then(setProductos)
       .catch((err) => setError(err.userMessage || 'Error al obtener productos'));
   }, []);
 
