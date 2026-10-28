@@ -53,6 +53,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Catálogo: se puede ver sin iniciar sesión.
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
+                        // Pruebas de RabbitMQ: enviar mensajes sin token.
+                        .requestMatchers("/api/messages/**").permitAll()
                         // Gestión de roles: solo SUPERVISOR.
                         .requestMatchers("/api/supervisor/**").hasRole(RolesPermisos.SUPERVISOR)
                         // Crear, editar y eliminar productos: solo ADMIN.
