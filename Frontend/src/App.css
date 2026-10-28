@@ -1263,3 +1263,53 @@ button.agregar:hover {
   border-radius: 8px;       /* esquinas redondeadas */
   box-shadow: 0 4px 12px rgba(0,0,0,0.4); /* sombra para destacar */
 }
+/* ===== Dashboard del supervisor ===== */
+.sup-mensaje {
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+}
+.sup-mensaje.ok { border: 1px solid var(--accent-green); color: var(--accent-green); }
+.sup-mensaje.error { border: 1px solid #ff4d4d; color: #ff4d4d; }
+
+.sup-roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  text-align: left;
+}
+.sup-rol {
+  background-color: #0b0b0b;
+  border: 1px solid var(--accent-blue);
+  border-radius: 10px;
+  padding: 1rem;
+}
+.sup-rol h4 { font-family: var(--font-encabezado); color: var(--accent-blue); }
+.sup-rol .sup-desc { color: var(--secondary-text-color); font-size: 0.9rem; margin-bottom: 0.5rem; }
+.sup-rol ul { padding-left: 1.2rem; }
+
+.admin-form .sup-buscar { display: flex; gap: 1rem; margin-bottom: 1rem; }
+.admin-form .sup-buscar input { margin-bottom: 0; }
+.admin-form .sup-buscar button { width: auto; padding: 0.8rem 1.5rem; }
+.admin-form .product-item select { width: auto; margin-bottom: 0; }
+.admin-form .product-item button { width: auto; }
+
+.sup-actual { color: var(--accent-green); }
+.sup-badge {
+  flex: 0 0 auto !important;
+  padding: 0.2rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  margin-right: 1rem;
+  font-weight: bold;
+}
+.sup-badge.rol-admin { color: var(--accent-blue) !important; }
+.sup-badge.rol-cliente { color: var(--accent-green) !important; }
+.sup-badge.rol-supervisor { color: #ffb347 !important; }
+.sup-nota { margin-top: 1.5rem; color: var(--secondary-text-color); font-size: 0.9rem; }
+
+@media (max-width: 600px) {
+  .admin-form .sup-buscar,
+  .supervisor .product-item { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+}
