@@ -15,6 +15,7 @@ import AboutUs from './components/pages/AboutUs';
 import Blog from './components/pages/Blog';
 import Resena from './components/pages/Resena';
 import DashboardAdmin from './components/pages/DashboardAdmin';
+import DashboardSupervisor from './components/pages/DashboardSupervisor';
 
 function App() {
   return (
@@ -39,6 +40,12 @@ function App() {
           <Route
             path="/admin"
             element={<ProtectedRoute roles={[ROLES.ADMIN]}><DashboardAdmin /></ProtectedRoute>}
+          />
+
+          {/* Ruta que requiere el rol SUPERVISOR: gestión de roles de usuarios */}
+          <Route
+            path="/supervisor"
+            element={<ProtectedRoute roles={[ROLES.SUPERVISOR]}><DashboardSupervisor /></ProtectedRoute>}
           />
         </Routes>
         <Footer />

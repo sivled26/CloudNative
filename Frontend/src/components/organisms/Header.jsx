@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 
 export default function Header() {
-  const { isAuthenticated, isAdmin, name, login, logout } = useAuth();
+  const { isAuthenticated, isAdmin, isSupervisor, name, login, logout } = useAuth();
 
   return (
     <header>
@@ -24,6 +24,7 @@ export default function Header() {
         <Link to="/carrito">Carro 🛒</Link>
 
         {isAuthenticated && isAdmin && <Link to="/admin">Admin</Link>}
+        {isAuthenticated && isSupervisor && <Link to="/supervisor">Supervisor</Link>}
         {isAuthenticated && <Link to="/perfil">{name || 'Mi perfil'}</Link>}
 
         {isAuthenticated ? (

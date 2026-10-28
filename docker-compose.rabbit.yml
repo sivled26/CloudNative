@@ -1,0 +1,31 @@
+services:
+  rabbit1:
+    image: rabbitmq:3.13-management
+    container_name: rabbit1
+    hostname: rabbit1
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "cloudnative-cookie-2026"
+    ports: ["5672:5672", "15672:15672"]
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/conf.d/20-cluster.conf
+      - rabbit1_data:/var/lib/rabbitmq
+    networks: [mq]
+
+  rabbit2:
+    image: rabbitmq:3.13-management
+    container_name: rabbit2
+    hostname: rabbit2
+    depends_on: [rabbit1]
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "cloudnative-cookie-2026"
+    ports: ["5673:5672", "15673:15672"]
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/conf.d/20-cluster.conf
+      - rabbit2_data:/var/lib/rabbitmq
+    networks: [mq]
+
+networks:
+  mq:
+volumes:
+  rabbit1_data:
+  rabbit2_data:

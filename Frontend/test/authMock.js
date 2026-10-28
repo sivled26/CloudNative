@@ -14,6 +14,7 @@ export function crearAuth(overrides = {}) {
     hasRole: (r) => roles.includes(r),
     hasAnyRole: (lista) => lista.some((r) => roles.includes(r)),
     isAdmin: roles.includes('ADMIN'),
+    isSupervisor: roles.includes('SUPERVISOR'),
     login: jest.fn(() => Promise.resolve()),
     logout: jest.fn(),
     ...overrides,
