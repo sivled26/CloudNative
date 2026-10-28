@@ -72,6 +72,7 @@ export default function AuthProvider({ children }) {
       hasRole,
       hasAnyRole: (lista) => lista.some(hasRole),
       isAdmin: hasRole(ROLES.ADMIN),
+      isSupervisor: hasRole(ROLES.SUPERVISOR),
       login,
       logout,
     };

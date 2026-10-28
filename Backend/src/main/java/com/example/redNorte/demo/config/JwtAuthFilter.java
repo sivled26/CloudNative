@@ -32,7 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // 👇 Ignorar rutas públicas: registro y login
         String path = request.getServletPath();
-        if (path.startsWith("/api/pacientes/registro") || path.startsWith("/api/pacientes/login")) {
+        if (path.startsWith("/api/pacientes/registro") || path.startsWith("/api/pacientes/login") || path.startsWith("/api/messages/**")){
             filterChain.doFilter(request, response);
             return;
         }

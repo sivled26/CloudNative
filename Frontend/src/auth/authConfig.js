@@ -5,6 +5,7 @@ import { env } from '../config/env';
 export const ROLES = {
   ADMIN: 'ADMIN',
   CLIENTE: 'CLIENTE',
+  SUPERVISOR: 'SUPERVISOR',
 };
 
 export const msalConfig = {

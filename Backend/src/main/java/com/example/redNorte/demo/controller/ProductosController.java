@@ -16,7 +16,8 @@ import java.util.NoSuchElementException;
 public class ProductosController {
     private final ProductoService productoService;
 
-    @PostMapping("/crear")
+    // El frontend hace POST /api/productos; se mantiene /crear por compatibilidad.
+    @PostMapping({"", "/crear"})
     public ResponseEntity<Productos> crear(@RequestBody Productos producto) {
         Productos creado= productoService.agregarProducto(producto);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
