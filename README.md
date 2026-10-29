@@ -148,6 +148,29 @@ GET http://localhost:8181/api/messages/dlq : muestra cuántos mensajes hay en la
 
 POST http://localhost:8181/api/messages/dlq/reprocesar : devuelve los mensajes de la DLQ a la cola "hello" para procesarlos de nuevo. Ejemplo: curl -X POST http://localhost:8181/api/messages/dlq/reprocesar
 
+## Administrador de RabbitMQ
+El backend incluye una API REST para administrar RabbitMQ: crear y eliminar colas, exchanges y bindings. La lógica está en service/RabbitAdminService.java, el controlador en controller/RabbitAdminController.java y los datos de entrada se validan con los DTO de dto/RabbitAdminDtos.java.
+
+POST http://localhost:8181/api/rabbit/queues : crea una cola. Cuerpo: {"nombre":"notificaciones"}. Opcionales: "durable" (true por defecto), "deadLetterExchange", "deadLetterRoutingKey" y "ttlMs".
+
+GET http://localhost:8181/api/rabbit/queues/{nombre} : muestra la cantidad de mensajes y consumidores de una cola.
+
+DELETE http://localhost:8181/api/rabbit/queues/{nombre} : elimina una cola.
+
+POST http://localhost:8181/api/rabbit/exchanges : crea un exchange. Cuerpo: {"nombre":"notificaciones.exchange","tipo":"direct"}. Tipos permitidos: direct, topic, fanout y headers.
+
+DELETE http://localhost:8181/api/rabbit/exchanges/{nombre} : elimina un exchange.
+
+POST http://localhost:8181/api/rabbit/bindings : une una cola a un exchange. Cuerpo: {"cola":"notificaciones","exchange":"notificaciones.exchange","routingKey":"nueva"}.
+
+DELETE http://localhost:8181/api/rabbit/bindings : elimina un binding. Usa el mismo cuerpo que al crearlo.
+
+Validaciones: los nombres son obligatorios y solo pueden contener letras, números, punto, guion y guion bajo. No se permiten nombres que empiecen con "amq." (reservados por RabbitMQ) ni eliminar las colas y exchanges que usa el sistema (hello, hello.dlx y hello.dlq). Si los datos no son válidos, la API responde 400 con el detalle de cada campo; si la cola no existe, responde 404; si RabbitMQ rechaza la operación, responde 409.
+
+Ejemplo en Windows:
+
+curl -X POST http://localhost:8181/api/rabbit/queues -H "Content-Type: application/json" -d "{\"nombre\":\"notificaciones\"}"
+
 ## Posibles errores
 Si al volver de Microsoft no queda la sesión iniciada, revisar que en la aplicación Cloud esté configurado el scope access_as_user en la opción Exponer una API.
 
