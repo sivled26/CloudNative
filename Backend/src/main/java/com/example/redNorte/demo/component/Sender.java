@@ -1,4 +1,5 @@
 package com.example.redNorte.demo.component;
+import com.example.redNorte.demo.config.RabbitMQConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ public class Sender {
             );// Enviar el mensaje a la cola
 // exchange="" usa el exchange por defecto (DIRECT)
 // routingKey="hello" éspecifica la cola destino
-            rabbitTemplate.convertAndSend("hello", fullMessage);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.COLA, fullMessage);
             System.out.println("[ ] Mensaje enviado: '" + fullMessage +
                     "'");
         } catch (Exception e) {
