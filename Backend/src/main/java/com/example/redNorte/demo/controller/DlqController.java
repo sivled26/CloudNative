@@ -1,10 +1,7 @@
 package com.example.redNorte.demo.controller;
 
 import com.example.redNorte.demo.config.RabbitMQConfig;
-import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.QueueInformation;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.example.redNorte.demo.service.DlqService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,36 +20,21 @@ import java.util.Map;
 @RequestMapping("/api/messages/dlq")
 public class DlqController {
 
-    private static final int MAXIMO_POR_LLAMADA = 100;
+    private final DlqService dlqService;
 
-    private final RabbitTemplate rabbitTemplate;
-    private final AmqpAdmin amqpAdmin;
-
-    public DlqController(RabbitTemplate rabbitTemplate, AmqpAdmin amqpAdmin) {
-        this.rabbitTemplate = rabbitTemplate;
-        this.amqpAdmin = amqpAdmin;
+    public DlqController(DlqService dlqService) {
+        this.dlqService = dlqService;
     }
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> estado() {
-        QueueInformation info = amqpAdmin.getQueueInfo(RabbitMQConfig.DLQ);
-        long cantidad = info == null ? 0 : info.getMessageCount();
         return ResponseEntity.ok(Map.of(
                 "cola", RabbitMQConfig.DLQ,
-                "mensajesFallidos", cantidad));
+                "mensajesFallidos", dlqService.contarMensajes()));
     }
 
     @PostMapping("/reprocesar")
     public ResponseEntity<Map<String, Object>> reprocesar() {
-        int reenviados = 0;
-        Message mensaje;
-        while (reenviados < MAXIMO_POR_LLAMADA
-                && (mensaje = rabbitTemplate.receive(RabbitMQConfig.DLQ)) != null) {
-            // Exchange "" (por defecto) + routing key = nombre de la cola principal.
-            rabbitTemplate.send("", RabbitMQConfig.COLA, mensaje);
-            reenviados++;
-        }
-        System.out.println("[ ] Reprocesados " + reenviados + " mensajes desde la DLQ");
-        return ResponseEntity.ok(Map.of("reenviados", reenviados));
+        return ResponseEntity.ok(Map.of("reenviados", dlqService.reprocesar()));
     }
 }
