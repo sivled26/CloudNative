@@ -8,6 +8,12 @@ Este proyecto corresponde a la Evaluación Parcial N°1 de Desarrollo Cloud Nati
 ## Requisitos
 Node.js (versión 20 o superior).
 
+Java 21 (por ejemplo, Eclipse Temurin 21).
+
+MySQL en ejecución (por ejemplo, con XAMPP), con usuario root sin contraseña y una base de datos llamada db_cloud.
+
+Docker Desktop abierto, para ejecutar RabbitMQ.
+
 Tener una cuenta de Duoc asignada a la aplicación Cloud en Azure.
 
 Tener el backend en ejecución para poder ver los productos y usar el panel de administrador.
@@ -26,7 +32,7 @@ Client ID: 90a79ba8-d9c2-403c-868a-bb2ad06c5b85
 
 Scope: api://90a79ba8-d9c2-403c-868a-bb2ad06c5b85/access_as_user
 
-Roles: ADMIN y CLIENTE
+Roles: ADMIN, CLIENTE y SUPERVISOR
 
 URI de redirección: http://localhost:5173
 
@@ -41,7 +47,7 @@ npm install
 
 Configurar las variables de entorno:
 
-Crear un archivo llamado .env dentro de la carpeta Frontend (se puede copiar el archivo .env.example) con los siguientes datos:
+Crear un archivo llamado .env dentro de la carpeta Frontend con los siguientes datos:
 
 VITE_AZURE_CLIENT_ID=90a79ba8-d9c2-403c-868a-bb2ad06c5b85
 
@@ -79,7 +85,9 @@ Perfil y Carrito: es necesario iniciar sesión.
 
 Administrador: solo pueden entrar los usuarios con rol ADMIN. Desde aquí se pueden agregar, editar y eliminar productos.
 
-Si un usuario sin rol ADMIN intenta entrar al panel de administrador, se muestra el mensaje de acceso denegado.
+Supervisor: solo pueden entrar los usuarios con rol SUPERVISOR. Desde aquí se buscan usuarios y se les asigna o quita el rol ADMIN o CLIENTE. El backend hace el cambio directamente en Azure usando Microsoft Graph, por lo que necesita la variable de entorno AZURE_CLIENT_SECRET y los permisos de aplicación AppRoleAssignment.ReadWrite.All, Application.Read.All y User.Read.All con consentimiento de administrador. El rol SUPERVISOR solo se asigna desde el portal de Azure.
+
+Si un usuario sin el rol necesario intenta entrar al panel de administrador o de supervisor, se muestra el mensaje de acceso denegado.
 
 ## Archivos principales del frontend
 src/auth/authConfig.js: configuración de MSAL con los datos de Azure.
@@ -105,9 +113,50 @@ Si el token no es válido o está vencido, el backend responde con error 401. Si
 
 El backend debe permitir peticiones desde http://localhost:5173.
 
+Iniciar el backend (requiere Java 21, MySQL y RabbitMQ en ejecución):
+
+cd Backend
+
+mvnw.cmd spring-boot:run
+
+El backend queda disponible en http://localhost:8181. Está listo cuando aparece el mensaje "Tomcat started on port 8181".
+
+## RabbitMQ y DLQ
+El backend usa RabbitMQ para enviar y recibir mensajes. RabbitMQ se ejecuta con Docker desde la carpeta raíz del proyecto:
+
+docker compose up -d
+
+Panel de administración de RabbitMQ: http://localhost:15672 (usuario guest, contraseña guest).
+
+Funcionamiento:
+
+El Sender envía el mensaje a la cola "hello" y el Receiver lo procesa.
+
+Si el Receiver falla, Spring reintenta el mensaje 2 veces más (3 intentos en total, esperando 1 y 2 segundos entre ellos).
+
+Si sigue fallando, el mensaje se rechaza y RabbitMQ lo envía al exchange "hello.dlx", que lo deja en la cola "hello.dlq" (Dead Letter Queue). Así el mensaje no se pierde y queda guardado para revisarlo.
+
+Las colas y el exchange se definen en config/RabbitMQConfig.java y los reintentos en application.properties.
+
+Endpoints para probar:
+
+GET http://localhost:8181/api/messages/send?message=hola : envía un mensaje que se procesa correctamente.
+
+GET http://localhost:8181/api/messages/send?message=error : envía un mensaje que falla a propósito y termina en la DLQ.
+
+GET http://localhost:8181/api/messages/dlq : muestra cuántos mensajes hay en la DLQ.
+
+POST http://localhost:8181/api/messages/dlq/reprocesar : devuelve los mensajes de la DLQ a la cola "hello" para procesarlos de nuevo. Ejemplo: curl -X POST http://localhost:8181/api/messages/dlq/reprocesar
+
 ## Posibles errores
 Si al volver de Microsoft no queda la sesión iniciada, revisar que en la aplicación Cloud esté configurado el scope access_as_user en la opción Exponer una API.
 
 Si aparece que el usuario no tiene rol, revisar que esté asignado en Aplicaciones empresariales, cerrar sesión y volver a entrar.
 
 Si no cargan los productos, revisar que el backend esté en ejecución y que la dirección en el archivo .env sea correcta.
+
+Si el backend muestra "Connection refused" hacia localhost:5672, RabbitMQ no está en ejecución: abrir Docker Desktop y ejecutar docker compose up -d.
+
+Si el backend muestra "PRECONDITION_FAILED" para la cola "hello", la cola existe con una configuración anterior sin DLQ: ejecutar docker restart rabbitmq y volver a iniciar el backend.
+
+Si el backend muestra "release version 21 not supported", se está usando una versión de Java anterior a la 21.
