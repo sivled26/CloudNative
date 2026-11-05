@@ -1,0 +1,75 @@
+# Se usa junto al compose del cluster:
+#   docker compose -f docker-compose.rabbit.yml -f docker-compose.apps.yml up -d --build
+services:
+  rabbit1:
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  rabbit2:
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  ms-notificaciones:
+    build: ./ms-notificaciones
+    container_name: ms-notificaciones
+    depends_on:
+      rabbit1:
+        condition: service_healthy
+      rabbit2:
+        condition: service_healthy
+    environment:
+      RABBIT_ADDRESSES: rabbit1:5672,rabbit2:5672
+      RABBIT_USER: ${RABBIT_USER}
+      RABBIT_PASS: ${RABBIT_PASS}
+    networks: [mq]
+    restart: unless-stopped
+
+  ms-rabbit-admin:
+    build: ./ms-rabbit-admin
+    container_name: ms-rabbit-admin
+    depends_on:
+      rabbit1:
+        condition: service_healthy
+      rabbit2:
+        condition: service_healthy
+    environment:
+      RABBIT_ADDRESSES: rabbit1:5672,rabbit2:5672
+      RABBIT_USER: ${RABBIT_USER}
+      RABBIT_PASS: ${RABBIT_PASS}
+      SECURITY_ENABLED: ${SECURITY_ENABLED:-true}
+      ENTRA_ISSUER: ${ENTRA_ISSUER}
+      ENTRA_AUDIENCE: ${ENTRA_AUDIENCE}
+    ports: ["8083:8083"]
+    networks: [mq]
+    restart: unless-stopped
+
+  ms-productos:
+    build: ./Backend
+    container_name: ms-productos
+    depends_on:
+      ms-notificaciones:
+        condition: service_started
+      rabbit1:
+        condition: service_healthy
+      rabbit2:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      RABBIT_ADDRESSES: rabbit1:5672,rabbit2:5672
+      RABBIT_USER: ${RABBIT_USER}
+      RABBIT_PASS: ${RABBIT_PASS}
+    ports: ["8080:8080"]
+    networks: [mq]
+    restart: unless-stopped

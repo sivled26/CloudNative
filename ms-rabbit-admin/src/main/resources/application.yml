@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: ms-rabbit-admin
+  rabbitmq:
+    addresses: ${RABBIT_ADDRESSES:localhost:5672}
+    username: ${RABBIT_USER:admin}
+    password: ${RABBIT_PASS:admin123}
+
+server:
+  port: ${SERVER_PORT:8083}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# Seguridad: JWT emitido por Microsoft Entra ID. Solo rol "Admin".
+# SECURITY_ENABLED=false desactiva la validacion (solo para pruebas locales).
+app:
+  security:
+    enabled: ${SECURITY_ENABLED:true}
+    issuer: ${ENTRA_ISSUER:}
+    audience: ${ENTRA_AUDIENCE:}   # uno o varios valores separados por coma
